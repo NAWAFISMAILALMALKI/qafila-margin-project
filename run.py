@@ -32,11 +32,30 @@ def ingest(data_dir: Path, db: Path) -> None:
     - From data_dir/qafila_oltp.sqlite: orders, order_items, products, stores.
     - Every data_dir/suppliers/prices_*.csv, keeping the file name of each row.
 
-    Running this twice must not duplicate anything.
+    Every table is fully reloaded (CREATE OR REPLACE), so running this twice never duplicates anything.
     """
     with duckdb.connect(str(db)) as con:  # closes the file before dbt opens it
         con.sql("CREATE SCHEMA IF NOT EXISTS raw")
-        raise NotImplementedError("Step 1: load the sources into the raw schema")
+
+        # App database: the four tables we need, copied as they are.
+        sqlite_path = (data_dir / "qafila_oltp.sqlite").as_posix()
+        con.sql(f"ATTACH '{sqlite_path}' AS app (TYPE sqlite, READ_ONLY)")
+        try:
+            for table in ["orders", "order_items", "products", "stores"]:
+                con.sql(f"CREATE OR REPLACE TABLE raw.{table} AS SELECT * FROM app.{table}")
+        finally:
+            con.sql("DETACH app")
+
+        # Supplier files: found by pattern, never by name (weekly files and the late correction alike).
+        # - all_varchar: keep costs exactly as written ("9,49", Arabic-Indic digits) for staging and quarantine
+        # - union_by_name: W39 renames unit_cost -> cost_sar and adds currency
+        # - filename: each row keeps the file it came from
+        pattern = (data_dir / "suppliers" / "prices_*.csv").as_posix()
+        con.sql(f"""
+            CREATE OR REPLACE TABLE raw.supplier_prices AS
+            SELECT * FROM read_csv('{pattern}', header = true, all_varchar = true,
+                                   union_by_name = true, filename = true)
+        """)
 
 
 def transform(db: Path) -> None:
