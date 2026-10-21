@@ -1,0 +1,42 @@
+version: 2
+
+models:
+  - name: stg_supplier_prices
+    description: One row per row of every supplier price file, with the cost parsed to a number (NULL if it is not one) and the SKU trimmed.
+    columns:
+      - name: source_file
+        description: File name only, e.g. prices_2026-W39.csv.
+        data_tests: [not_null]
+      - name: raw_cost
+        description: The cost exactly as it appeared in the file (unit_cost, or cost_sar from week 39).
+      - name: unit_cost_sar
+        description: raw_cost as a number; decimal commas and Arabic-Indic digits are converted.
+
+  - name: stg_products
+    description: One row per product, SKU trimmed.
+    columns:
+      - name: product_id
+        data_tests: [unique, not_null]
+      - name: sku
+        data_tests: [unique, not_null]
+
+  - name: stg_stores
+    description: One row per store.
+    columns:
+      - name: store_id
+        data_tests: [unique, not_null]
+
+  - name: stg_orders
+    description: One row per order, with the Riyadh order date.
+    columns:
+      - name: order_id
+        data_tests: [unique, not_null]
+      - name: order_date
+        data_tests: [not_null]
+
+  - name: stg_order_items
+    description: One row per order line (order_id, line_no), with its revenue.
+    data_tests:
+      - unique:
+          arguments:
+            column_name: "order_id || '-' || line_no"
