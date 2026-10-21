@@ -1,0 +1,17 @@
+version: 2
+
+models:
+  - name: weekly_margin
+    description: >
+      Gross margin per ISO week (of the Riyadh order date), city and product category, from delivered
+      order lines with a positive quantity since 2026-08-31. Each line is costed at the supplier cost
+      valid on its order date; lines without a valid cost count in lines and revenue_sar only.
+    data_tests:
+      - unique:
+          arguments:
+            column_name: "iso_week || '|' || city || '|' || category"
+    columns:
+      - name: lines
+        data_tests: [not_null]
+      - name: uncosted_lines
+        data_tests: [not_null]
