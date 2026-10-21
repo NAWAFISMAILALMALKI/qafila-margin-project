@@ -1,0 +1,21 @@
+version: 2
+
+models:
+  - name: product_cost_history
+    description: >
+      SCD2 history of supplier costs, one row per SKU per cost version. A version starts when a SKU's
+      cost changes (rounded to 2 decimals); weeks without a quote keep the previous cost. valid_to is
+      the next version's valid_from (exclusive) and empty for the current version.
+    data_tests:
+      - unique:
+          arguments:
+            column_name: "sku || '|' || valid_from"
+    columns:
+      - name: sku
+        data_tests: [not_null]
+      - name: unit_cost_sar
+        data_tests: [not_null]
+      - name: valid_from
+        data_tests: [not_null]
+      - name: is_current
+        data_tests: [not_null]
