@@ -84,4 +84,4 @@ Course dataset (seed 2026), one warehouse folder, three runs:
 
 ## AI assistance
 
-I used Claude (Anthropic's AI assistant) throughout this project. It wrote `ingest()` and `publish()`, the dbt models (staging, silver, quality, gold) and the dbt tests, tested the pipeline in Google Colab against an independent Python re-implementation of the rules on two seeds, and drafted this README. I directed the work step by step.
+I used Claude (Anthropic's AI assistant) throughout this project. It wrote `ingest()` and `publish()`, the dbt models (staging, silver, quality, gold) and the dbt tests, tested the pipeline in Google Colab against an independent Python re-implementation of the rules on two seeds, and drafted this README. I directed the work step by step. I reviewed each step and can explain the SCD2 history, the point-in-time join and the publish logic. I ran the pipeline and `tools/check.py` on my own machine.
